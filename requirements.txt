@@ -1,1 +1,3 @@
 termcolor
+urllib3
+pytest
