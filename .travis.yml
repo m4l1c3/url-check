@@ -12,7 +12,7 @@ install:
         fi
     - pip install tox-travis coveralls
 script:
-  - pytest
+  - pytest test.py
 
 #after_success:
 #    - coveralls
