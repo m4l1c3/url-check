@@ -6,10 +6,8 @@ import sys
 import os
 import argparse
 from itertools import product
-
 from modules.files import Files
 from modules.presentation import Presentation
-from modules.response_handler import  ResponseHandler
 
 
 urls = []
@@ -25,7 +23,6 @@ class UrlChecker(object):
         self.urls = []
         self.out_file = ''
         self.presentation = Presentation()
-        self.response_handler = ResponseHandler()
         self.files = Files()
         self.source_word_list = argv.wordlist
         self.url_validation = re.compile(
@@ -36,29 +33,23 @@ class UrlChecker(object):
             r'(?::\d+)?'  # optional port
             r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         self.parse_arguments(argv)
-        self.main()
+        self.run()
+
 
     def main(self):
-        self.presentation.print_header(self.version)
-
-        if self.source_word_list is not None and os.path.isfile(self.source_word_list):
-            try:
-                with open(self.source_word_list, 'r') as word_list:
-                    self.word_list = word_list.read().splitlines()
-
-            except IOError as error:
-                self.errors.append(error)
-                print(error)
-
-        if not self.word_list:
-            print(colored('No URLs specified', 'red'))
-        else:
-            print(colored('Beginning URL Check', 'magenta'))
+        if self.validate_wordlist():
             self.thread_pool.map(self.request, self.word_list)
 
         if self.out_file is not '':
             self.files.save_output(self.out_file, urls)
+
+
+    def run(self):
+        self.setup_wordlist()
+        self.presentation.print_header(self.version)
+        self.main()
         self.presentation.print_footer()
+
 
     def parse_arguments(self, argv):
         if len(sys.argv) < 1:
@@ -69,6 +60,25 @@ class UrlChecker(object):
             self.thread_pool = ThreadPool(int(argv.threads))
         if argv.url is not None and self.url_validation.match(argv.url):
             self.word_list.append(argv.url)
+
+
+    def validate_wordlist(self):
+        if not self.word_list:
+            print(colored('No URLs specified', 'red'))
+            return False
+        else:
+            print(colored('Beginning URL Check', 'magenta'))
+            return True
+
+    def setup_wordlist(self):
+        if self.source_word_list is not None and os.path.isfile(self.source_word_list):
+            try:
+                with open(self.source_word_list, 'r') as word_list:
+                    self.word_list = word_list.read().splitlines()
+
+            except IOError as error:
+                self.errors.append(error)
+                print(error)
 
 
     @staticmethod
@@ -83,9 +93,9 @@ class UrlChecker(object):
             response = ex
 
 
-def get_response_color(response):
+def get_response_color(response, color='green'):
     if not type(response) is urllib3.exceptions.MaxRetryError:
-        if response.status < 300:
+        if response.status < 200:
             color = 'green'
         elif response.status < 400:
             color = 'yellow'
