@@ -1,0 +1,11 @@
+"tests": [
+    "**/tests/**"
+],
+"ignore": [
+    "**/dist/**",
+    "**/tests/**"
+],
+"critics": {
+    "lint": {"engine": "pylint"},
+    "wc": { "limit": 5000 }
+}
