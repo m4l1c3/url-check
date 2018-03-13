@@ -8,7 +8,7 @@ import argparse
 from itertools import product
 from modules.files import Files
 from modules.presentation import Presentation
-
+import time
 
 urls = []
 
@@ -43,13 +43,11 @@ class UrlChecker(object):
         if self.out_file is not '':
             self.files.save_output(self.out_file, urls)
 
-
     def run(self):
         self.setup_wordlist()
         self.presentation.print_header(self.version)
         self.main()
         self.presentation.print_footer()
-
 
     def parse_arguments(self, argv):
         if len(sys.argv) < 1:
@@ -60,7 +58,6 @@ class UrlChecker(object):
             self.thread_pool = ThreadPool(int(argv.threads))
         if argv.url is not None and self.url_validation.match(argv.url):
             self.word_list.append(argv.url)
-
 
     def validate_wordlist(self):
         if not self.word_list:
@@ -80,7 +77,6 @@ class UrlChecker(object):
                 self.errors.append(error)
                 print(error)
 
-
     @staticmethod
     def request(url):
         try:
@@ -93,7 +89,7 @@ class UrlChecker(object):
             response = ex
 
 
-def get_response_color(response, color='green'):
+def get_response_color(response):
     if not type(response) is urllib3.exceptions.MaxRetryError:
         if response.status < 200:
             color = 'green'
@@ -123,8 +119,10 @@ def parse_args(arguments=''):
 
 if __name__ == "__main__":
     try:
+        start_time = time.time()
         args = parse_args()
         main = UrlChecker(args)
+        print("--- %s seconds ---" % (time.time() - start_time))
     except KeyboardInterrupt:
         sys.exit('Keyboard Interrupt by User!!')
     except argparse.ArgumentError as error:

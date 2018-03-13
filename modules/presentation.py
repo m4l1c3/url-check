@@ -29,7 +29,7 @@ class Presentation(object):
 
     @staticmethod
     def get_footer():
-        footer = '* https://github.com/m4l1c3/url-check                        *'
+        footer = '* https://github.com/m4l1c3/url-checker                     *'
         return footer
 
     @staticmethod
